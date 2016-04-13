@@ -47,6 +47,23 @@ var getPlatforms = function (projectName) {
       { name: 'Default-Landscape~ipad.png',           width: 1024, height: 768  },
       { name: 'Default-Landscape@2x~ipad.png',        width: 2048, height: 1536 },
       { name: 'Default-Landscape@2x~ipad-pro.png',    width: 2732, height: 2048 }
+    ],
+    iconPath: 'res/icon/ios/',
+    icon: [
+      { name: 'icon-60@3x.png', width: 180 , height: 180 },
+      { name: 'icon-60.png', width: 60, height: 60 },
+      { name: 'icon-60@2x.png', width: 120, height: 120 },
+      { name: 'icon-76.png', width: 76, height: 76 },
+      { name: 'icon-76@2x.png', width: 152, height: 152 },
+      { name: 'icon-40.png', width: 40, height: 40 },
+      { name: 'icon-40@2x.png', width: 80, height: 80 },
+      { name: 'icon.png', width: 57, height: 57 },
+      { name: 'icon@2x.png', width: 114, height: 114 },
+      { name: 'icon-72.png', width: 72, height: 72 },
+      { name: 'icon-72@2x.png', width: 144, height: 144 },
+      { name: 'icon-small@2x.png', width: 58, height: 58 },
+      { name: 'icon-50.png', width: 50, height: 50 },
+      { name: 'icon-50@2x.png', width: 100, height: 100 },
     ]
   });
   platforms.push({
@@ -62,24 +79,47 @@ var getPlatforms = function (projectName) {
       { name: 'splash-port-mdpi.png',  width: 320,  height: 480  },
       { name: 'splash-port-hdpi.png',  width: 480,  height: 800  },
       { name: 'splash-port-xhdpi.png', width: 720,  height: 1280 }
+    ],
+    iconPath: 'res/icon/android/',
+    icon: [
+      { name: 'icon-ldpi.png', width: 36 , height: 36 },
+      { name: 'icon-mdpi.png', width: 48, height: 48 },
+      { name: 'icon-hdpi.png', width: 72, height: 72 },
+      { name: 'icon-xhdpi.png', width: 96, height: 96 },
+      { name: 'icon-xxhdpi.png', width: 144, height: 144 },
+      { name: 'icon-xxxhdpi.png', width: 192, height: 192 }
     ]
   });
   platforms.push({
     name : 'windows',
     isAdded : fs.existsSync('platforms/windows'),
-    splashPath : 'platforms/windows/images/',
+    splashPath : 'res/screen/windows/',
     splash : [
       { name: 'SplashScreen.scale-100.png', width: 620,  height: 300  },
       { name: 'SplashScreen.scale-125.png', width: 775,  height: 375  },
       { name: 'SplashScreen.scale-150.png', width: 930,  height: 450  },
       { name: 'SplashScreen.scale-200.png', width: 1240, height: 600  },
       { name: 'SplashScreen.scale-400.png', width: 2480, height: 1200 }
+    ],
+    iconPath: 'res/icon/windows/',
+    icon: [
+      { name: 'logo.png', width: 150 , height: 150 },
+      { name: 'smalllogo.png', width: 30, height: 30 },
+      { name: 'storelogo.png', width: 50, height: 50 },
+      { name: 'Square44x44Logo.scale-100.png', width: 44, height: 44 },
+      { name: 'Square44x44Logo.scale-240.png', width: 106, height: 106 },
+      { name: 'Square70x70Logo.scale-100.png', width: 70, height: 70 },
+      { name: 'Square71x71Logo.scale-100.png', width: 71 , height: 71 },
+      { name: 'Square71x71Logo.scale-240.png', width: 170, height: 170 },
+      { name: 'Square150x150Logo.scale-240.png', width: 360, height: 360 },
+      { name: 'Square310x310Logo.scale-100.png', width: 310, height: 310 },
+      { name: 'Wide310x150Logo.scale-100.png', width: 310, height: 150 },
+      { name: 'Wide310x150Logo.scale-240.png', width: 744, height: 360 }
     ]
   });
   deferred.resolve(platforms);
   return deferred.promise;
 };
-
 
 /**
  * @var {Object} settings - names of the config file and of the splash image
@@ -88,7 +128,9 @@ var getPlatforms = function (projectName) {
 var settings = {};
 settings.CONFIG_FILE = 'config.xml';
 settings.SPLASH_PNG = 'splash.png';
-settings.SPLASH_SVG = 'splash.svg'
+settings.SPLASH_SVG = 'splash.svg';
+settings.ICON_SVG = 'icon.svg';
+settings.ICON_PNG = 'icon.png';
 
 /**
  * @var {Object} console utils
@@ -131,43 +173,58 @@ var getProjectName = function () {
   return deferred.promise;
 };
 
-var generatePNGFromSVG = function () {
+var converSVGToPNG = function (src, dest) {
   var deferred = Q.defer();
-  ig.convert(['-density', '4800', '-resize', '2208x2208', settings.SPLASH_SVG, settings.SPLASH_PNG ],
+  ig.convert(['-density', '4800', '-resize', '2208x2208', src, dest],
     function(err, stdout, sdterr) {
       if (err) {
         throw err;
         deferred.reject(err);
       } else {
         deferred.resolve();
-        display.success(settings.SPLASH_PNG + ' created');
+        display.success(dest + ' created');
       }
     });
   return deferred.promise;
 }
 
+var generatePNGFromSVG = function () {
+  var deferred = Q.defer();
+  var all = [
+    converSVGToPNG(settings.SPLASH_SVG, settings.SPLASH_PNG),
+    converSVGToPNG(settings.ICON_SVG, settings.ICON_PNG)
+  ];
+  Q.all(all).then(function () {
+    deferred.resolve();
+  }).catch(function (err) {
+    console.log(err);
+  });
+  return deferred.promise;
+}
+
 /**
- * Crops and creates a new splash in the platform's folder.
+ * Crops and creates a new asset in the res folder.
  *
- * @param  {Object} platform
- * @param  {Object} splash
+ * @param  {Object} srcPath
+ * @param  {String} destPath
+ * @param  {Object} asset
  * @return {Promise}
  */
-var generateSplash = function (platform, splash) {
+var generateAssets = function (srcPath, destPath, asset) {
   var deferred = Q.defer();
   ig.crop({
-    srcPath: settings.SPLASH_PNG,
-    dstPath: platform.splashPath + splash.name,
+    srcPath: srcPath,
+    dstPath: destPath + asset.name,
     quality: 1,
     format: 'png',
-    width: splash.width,
-    height: splash.height
+    width: asset.width,
+    height: asset.height
   } , function(err, stdout, stderr){
     if (err) {
       deferred.reject(err);
     } else {
       deferred.resolve();
-      display.success(splash.name + ' created');
+      display.success(asset.name + ' created');
     }
   });
   return deferred.promise;
@@ -184,11 +241,18 @@ var generateSplashForPlatform = function (platform) {
   display.header('Generating splash screen for ' + platform.name);
   fse.emptyDir(platform.splashPath, function(err) {
     if (!err) display.success(platform.splashPath + ' exists');
-  })
+  });
+  fse.emptyDir(platform.iconPath, function(err) {
+    if (!err) display.success(platform.iconPath + ' exists');
+  });
   var all = [];
   var splashes = platform.splash;
   splashes.forEach(function (splash) {
-    all.push(generateSplash(platform, splash));
+    all.push(generateAssets(settings.SPLASH_PNG, platform.splashPath, splash));
+  });
+  var icons = platform.icon;
+  icons.forEach(function (icon) {
+    all.push(generateAssets(settings.ICON_PNG, platform.iconPath, icon))
   });
   Q.all(all).then(function () {
     deferred.resolve();
