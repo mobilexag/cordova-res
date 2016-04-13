@@ -18,7 +18,7 @@ var getPlatforms = function (projectName) {
     name : 'ios',
     // TODO: use async fs.exists
     isAdded : fs.existsSync('platforms/ios'),
-    splashPath : 'platforms/ios/' + projectName + '/Images.xcassets/LaunchImage.launchimage/',
+    splashPath : 'res/screen/ios/',
     splash : [
       { name: 'Default-568h@2x~iphone.png',           width: 640,  height: 1136 },
       { name: 'Default-667h.png',                     width: 750,  height: 1334 },
@@ -51,16 +51,16 @@ var getPlatforms = function (projectName) {
   platforms.push({
     name : 'android',
     isAdded : fs.existsSync('platforms/android'),
-    splashPath : 'platforms/android/res/',
+    splashPath : 'res/screen/android/',
     splash : [
-      { name: 'drawable-land-ldpi/screen.png',  width: 320,  height: 200  },
-      { name: 'drawable-land-mdpi/screen.png',  width: 480,  height: 320  },
-      { name: 'drawable-land-hdpi/screen.png',  width: 800,  height: 480  },
-      { name: 'drawable-land-xhdpi/screen.png', width: 1280, height: 720  },
-      { name: 'drawable-port-ldpi/screen.png',  width: 200,  height: 320  },
-      { name: 'drawable-port-mdpi/screen.png',  width: 320,  height: 480  },
-      { name: 'drawable-port-hdpi/screen.png',  width: 480,  height: 800  },
-      { name: 'drawable-port-xhdpi/screen.png', width: 720,  height: 1280 }
+      { name: 'splash-land-ldpi.png',  width: 320,  height: 200  },
+      { name: 'splash-land-mdpi.png',  width: 480,  height: 320  },
+      { name: 'splash-land-hdpi.png',  width: 800,  height: 480  },
+      { name: 'splash-land-xhdpi.png', width: 1280, height: 720  },
+      { name: 'splash-port-ldpi.png',  width: 200,  height: 320  },
+      { name: 'splash-port-mdpi.png',  width: 320,  height: 480  },
+      { name: 'splash-port-hdpi.png',  width: 480,  height: 800  },
+      { name: 'splash-port-xhdpi.png', width: 720,  height: 1280 }
     ]
   });
   platforms.push({
@@ -86,7 +86,8 @@ var getPlatforms = function (projectName) {
  */
 var settings = {};
 settings.CONFIG_FILE = 'config.xml';
-settings.SPLASH_FILE   = 'splash.png';
+settings.SPLASH_PNG = 'splash.png';
+settings.SPLASH_SVG = 'splash.svg'
 
 /**
  * @var {Object} console utils
@@ -129,6 +130,21 @@ var getProjectName = function () {
   return deferred.promise;
 };
 
+var generatePNGFromSVG = function () {
+  var deferred = Q.defer();
+  ig.convert(['-density', '4800', '-resize', '2208x2208', settings.SPLASH_SVG, settings.SPLASH_PNG ],
+    function(err, stdout, sdterr) {
+      if (err) {
+        throw err;
+        deferred.reject(err);
+      } else {
+        deferred.resolve();
+        display.success(settings.SPLASH_PNG + ' created');
+      }
+    });
+  return deferred.promise;
+}
+
 /**
  * Crops and creates a new splash in the platform's folder.
  *
@@ -139,7 +155,7 @@ var getProjectName = function () {
 var generateSplash = function (platform, splash) {
   var deferred = Q.defer();
   ig.crop({
-    srcPath: settings.SPLASH_FILE,
+    srcPath: settings.SPLASH_PNG,
     dstPath: platform.splashPath + splash.name,
     quality: 1,
     format: 'png',
@@ -227,12 +243,12 @@ var atLeastOnePlatformFound = function () {
  */
 var validSplashExists = function () {
   var deferred = Q.defer();
-  fs.exists(settings.SPLASH_FILE, function (exists) {
+  fs.exists(settings.SPLASH_PNG, function (exists) {
     if (exists) {
-      display.success(settings.SPLASH_FILE + ' exists');
+      display.success(settings.SPLASH_PNG + ' exists');
       deferred.resolve();
     } else {
-      display.error(settings.SPLASH_FILE + ' does not exist in the root folder');
+      display.error(settings.SPLASH_PNG + ' does not exist in the root folder');
       deferred.reject();
     }
   });
@@ -263,6 +279,7 @@ display.header('Checking Project & Splash');
 atLeastOnePlatformFound()
 .then(validSplashExists)
 .then(configFileExists)
+.then(generatePNGFromSVG)
 .then(getProjectName)
 .then(getPlatforms)
 .then(generateSplashes)
