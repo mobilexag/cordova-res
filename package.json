@@ -1,6 +1,6 @@
 {
   "name": "cordova-splash",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Automatic splash screen cropping for Cordova",
   "main": "index.js",
   "preferGlobal": "true",
@@ -20,17 +20,18 @@
     "splashscreen",
     "crop"
   ],
-  "author": "Alex Disler",
+  "author": "Alex Disler, Chau Thai",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/AlexDisler/cordova-splash/issues"
   },
   "homepage": "https://github.com/AlexDisler/cordova-splash",
   "dependencies": {
-    "imagemagick": "^0.1.3",
-    "underscore": "^1.6.0",
     "colors": "^0.6.2",
+    "fs-extra": "^0.26.7",
+    "imagemagick": "^0.1.3",
     "q": "^1.0.1",
+    "underscore": "^1.6.0",
     "xml2js": "^0.4.3"
   }
 }
