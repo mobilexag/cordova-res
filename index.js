@@ -4,6 +4,7 @@ var ig     = require('imagemagick');
 var colors = require('colors');
 var _      = require('underscore');
 var Q      = require('q');
+var fse    = require('fs-extra');
 
 /**
  * Check which platforms are added to the project and return their splash screen names and sizes
@@ -181,6 +182,9 @@ var generateSplash = function (platform, splash) {
 var generateSplashForPlatform = function (platform) {
   var deferred = Q.defer();
   display.header('Generating splash screen for ' + platform.name);
+  fse.emptyDir(platform.splashPath, function(err) {
+    if (!err) display.success(platform.splashPath + ' exists');
+  })
   var all = [];
   var splashes = platform.splash;
   splashes.forEach(function (splash) {
@@ -243,12 +247,12 @@ var atLeastOnePlatformFound = function () {
  */
 var validSplashExists = function () {
   var deferred = Q.defer();
-  fs.exists(settings.SPLASH_PNG, function (exists) {
+  fs.exists(settings.SPLASH_SVG, function (exists) {
     if (exists) {
-      display.success(settings.SPLASH_PNG + ' exists');
+      display.success(settings.SPLASH_SVG + ' exists');
       deferred.resolve();
     } else {
-      display.error(settings.SPLASH_PNG + ' does not exist in the root folder');
+      display.error(settings.SPLASH_SVG + ' does not exist in the root folder');
       deferred.reject();
     }
   });
