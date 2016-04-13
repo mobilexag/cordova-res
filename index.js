@@ -127,10 +127,11 @@ var getPlatforms = function (projectName) {
  */
 var settings = {};
 settings.CONFIG_FILE = 'config.xml';
-settings.SPLASH_PNG = 'splash.png';
+settings.DEST_DIR = 'res/';
+settings.SPLASH_PNG = settings.DEST_DIR + 'splash.png';
 settings.SPLASH_SVG = 'splash.svg';
 settings.ICON_SVG = 'icon.svg';
-settings.ICON_PNG = 'icon.png';
+settings.ICON_PNG = settings.DEST_DIR + 'icon.png';
 
 /**
  * @var {Object} console utils
@@ -190,6 +191,9 @@ var converSVGToPNG = function (src, dest) {
 
 var generatePNGFromSVG = function () {
   var deferred = Q.defer();
+  fse.emptyDir(settings.DEST_DIR, function(err) {
+    if (!err) display.success(settings.DEST_DIR + ' exists');
+  });
   var all = [
     converSVGToPNG(settings.SPLASH_SVG, settings.SPLASH_PNG),
     converSVGToPNG(settings.ICON_SVG, settings.ICON_PNG)
