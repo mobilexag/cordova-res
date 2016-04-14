@@ -1,4 +1,4 @@
-# cordova-splash
+# cordova-res
 
 Automatic splash screen and icon generator for Cordova. Create a splash screen and icon as SVG once in the root folder of your Cordova project and use cordova-splash to automatically crop and copy it for all the platforms your project supports (currenty works with iOS, Android and Windows 10).
 
